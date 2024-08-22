@@ -1,6 +1,11 @@
 use leptos::*;
-use sqlx::SqlitePool;
 use crate::user::User;
+use cfg_if::cfg_if;
+cfg_if!{
+    if #[cfg(feature="ssr")] {
+        use sqlx::SqlitePool;
+    }
+}
 
 
 #[server(Login,"api","Url","login")]

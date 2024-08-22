@@ -11,3 +11,7 @@ node_modules/
 test-results/
 end2end/playwright-report/
 playwright/.cache/
+
+# sqlite intermediate files
+**/*.sqlite3-shm
+**/*.sqlite3-wal
