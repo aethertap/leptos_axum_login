@@ -1,5 +1,8 @@
 use leptos::*;
+use leptos_router::*;
 use leptos_dom::logging::console_log;
+
+use crate::auth::Register;
 
 
 /// This function returns true if the name provided is not already a username in the database.
@@ -33,23 +36,29 @@ pub fn Register() -> impl IntoView {
             console_log(&format!("Result: {res:?}"));
             res.unwrap_or(true)
         });
+    let register = create_server_action::<Register>();
     view! {
-        <input type="text"
-            on:input = move |e|{ username.set(event_target_value(&e))}
-            prop:value=move ||username.get()
-            placeholder="Username"/>
-        <input type=password_type prop:value = move ||password.get()/>
-        <input type="submit" value=" Register "/>
-        <Suspense fallback={move ||view!{<p>"checking username..."</p>}}>
-            {
-                move || {
-                    if Some(true) == valid_username() {
-                        view!{<p>"That'll work"</p>}
-                    } else {
-                        view!{<p>"Nope, can't have that one"</p>}
+        <ActionForm action=register>
+            <input type="text"
+                name="username"
+                on:input = move |e|{ username.set(event_target_value(&e))}
+                prop:value=move ||username.get()
+                placeholder="Username"/>
+            <input type=password_type
+                name="password"
+                prop:value = move ||password.get()/>
+            <input type="submit" value=" Register "/>
+            <Suspense fallback={move ||view!{<p>"checking username..."</p>}}>
+                {
+                    move || {
+                        if Some(true) == valid_username() {
+                            view!{<p>"That'll work"</p>}
+                        } else {
+                            view!{<p>"Nope, can't have that one"</p>}
+                        }
                     }
                 }
-            }
-        </Suspense>
+            </Suspense>
+        </ActionForm>
     }
 }

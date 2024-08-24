@@ -24,7 +24,7 @@ cfg_if!{
         }
 
         async fn server_fn_handler(auth_session: AuthSession<SqliteBackend>, State(appstate):State<AppState>,request: http::Request<Body>) -> impl IntoResponse{
-            log!("server_fn_handler: req={request:#?}");
+            //log!("server_fn_handler: req={request:#?}");
             handle_server_fns_with_context(move || {
                 provide_context(auth_session.clone());
                 provide_context(appstate.pool.clone());

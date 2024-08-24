@@ -22,6 +22,7 @@ cfg_if!{
 
         #[derive(Clone,PartialEq,Debug,FromRow)]
         pub struct SqlUser {
+            pub id: i64,
             pub username: String,
             pub pass_hash: String,
             pub pass_salt: String,
@@ -36,6 +37,7 @@ cfg_if!{
                 }).ok_or_else(||AppError::Internal("Badly formatted password hash".into()))?;
 
                 Ok(User {
+                    id: self.id,
                     username: self.username,
                     session_auth_hash: hash,
                 }
@@ -48,6 +50,9 @@ cfg_if!{
 
 #[derive(Clone,PartialEq,Debug,Serialize,Deserialize)]
 pub struct User {
+    /// The database id for this user
+    pub id: i64,
+
     /// User-facing username, probably unique
     pub username: String,
 
