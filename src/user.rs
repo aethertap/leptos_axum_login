@@ -30,6 +30,7 @@ cfg_if!{
 
         impl SqlUser {
             pub fn to_user(self) -> Result<User,AppError> {
+                use base64::prelude::*;
                 let PasswordHash{hash,..} = PasswordHash::parse(&self.pass_hash,password_hash::Encoding::B64)
                     .map_err(|e| AppError::Internal(format!("Decode password: {e}")))?;
                 let hash:Vec<u8> = hash.map(|output| {

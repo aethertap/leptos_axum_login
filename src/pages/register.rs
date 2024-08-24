@@ -37,6 +37,12 @@ pub fn Register() -> impl IntoView {
             res.unwrap_or(true)
         });
     let register = create_server_action::<Register>();
+    create_effect(move |_| {
+        use gloo::timers::callback::Timeout;
+        if let Some(Ok(Some(_))) = register.value()() {
+            console_log("Got a user logged in");
+        }
+    });
     view! {
         <ActionForm action=register>
             <input type="text"

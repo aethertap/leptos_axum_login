@@ -1,25 +1,30 @@
 
 use cfg_if::cfg_if;
+use leptos::logging::log;
 
-use axum_login::{AuthnBackend, UserId};
-use sqlx::SqlitePool;
-use async_trait::async_trait;
-use crate::user::*;
-use argon2::{
-    password_hash::{
-        rand_core::OsRng,
-        PasswordHash, PasswordHasher, PasswordVerifier, SaltString
-    },
-    Argon2
-};
+cfg_if!{
+    if #[cfg(feature="ssr")] {
+        use axum_login::{AuthnBackend, UserId};
+        use sqlx::SqlitePool;
+        use async_trait::async_trait;
+        use crate::user::*;
+        use argon2::{
+            password_hash::{
+                rand_core::OsRng,
+                PasswordHash, PasswordHasher, PasswordVerifier, SaltString
+            },
+            Argon2
+        };
 
+    }
+}
 use crate::error_template::{self, AppError};
 
 pub static DB_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"),"/db/database.sqlite3");
 pub static MIGRATIONS_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"),"/db/migrations");
 
 /// This is a barebones example of an authentication backend using sqlite3.
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct SqliteBackend {
     pub pool: SqlitePool,
 }
@@ -47,6 +52,7 @@ impl SqliteBackend {
     /// Insert a new user into the database. Success only if the user doesn't already exist
     /// and the data meets criteria (which are *very* weak in this example!).
     pub async fn add_user(&self, username: String, password: String) -> Result<Option<User>, AppError> {
+        use base64::prelude::*;
         // First validate the data. You must do better than this.
         if username.len() < 2 || password.len() < 2 {
             return Err(AppError::Invalid("Username and password have to be at least 2 characters each!".into()));
@@ -54,17 +60,32 @@ impl SqliteBackend {
         // Hash the password and insert the new user.
         let argon2 = Argon2::default();
         let salt = SaltString::generate(&mut OsRng);
-        let salt64 = salt.as_str();
-        let hash:PasswordHash = argon2.hash_password(password.as_bytes(), &salt)
+        let pass_salt_str = salt.as_str();
+        log!("add_user: hashing password");
+        let pass_hash:PasswordHash = argon2.hash_password(password.as_bytes(), &salt)
             .map_err(|e| AppError::Internal(format!("Password hashing error: {e}")))?;
-        let hash_str = hash.to_string();
-        sqlx::query!("insert into users (username,pass_hash,pass_salt) values ($1,$2,$3)",
+        log!("password hash is {:?}",pass_hash.hash);
+        let pass_hash_str = pass_hash.to_string();
+        #[derive(Debug)]
+        struct InsertUser{
+            pub id:i64
+        };
+        log!("add_user: inserting user");
+        let new_id:InsertUser = sqlx::query_as!(InsertUser, "insert into users (username,pass_hash,pass_salt) values ($1,$2,$3) returning id",
             username,
-            hash_str,
-            salt64
-        ).execute(&self.pool).await
+            pass_hash_str,
+            pass_salt_str,
+        ).fetch_one(&self.pool).await
         .map_err(|e| AppError::Internal(format!("Error inserting user: {e}")))?;
-        todo!();
+        log!("add_user: new user id is {new_id:?}");
+        log!("Returning newly created user {username}");
+        let hash_bytes = pass_hash.hash.unwrap().as_bytes().to_owned();
+        let hash_bytes_64 = BASE64_STANDARD.encode(&hash_bytes);
+        Ok(Some(User{
+            id:new_id.id,
+            username,
+            session_auth_hash: hash_bytes,
+        }))
     }
 }
 

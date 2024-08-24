@@ -1,4 +1,5 @@
 #![allow(unused)]
+//#![feature(duration_constructors)]
 
 use axum::response::IntoResponse;
 use cfg_if::cfg_if;
@@ -7,6 +8,7 @@ use leptos_axum::handle_server_fns_with_context;
 cfg_if!{
     if #[cfg(feature="ssr")] {
         use axum_login::AuthSession;
+        use tower_sessions::Session;
         use logging::log;
         use axum_macros::FromRef;
         use axum::{body::Body, extract::State};
@@ -23,23 +25,40 @@ cfg_if!{
             pub pool: SqlitePool,
         }
 
-        async fn server_fn_handler(auth_session: AuthSession<SqliteBackend>, State(appstate):State<AppState>,request: http::Request<Body>) -> impl IntoResponse{
+        async fn server_fn_handler(auth_session: AuthSession<SqliteBackend>, session: Session, State(appstate):State<AppState>,request: http::Request<Body>) -> impl IntoResponse{
             //log!("server_fn_handler: req={request:#?}");
+            //session.insert("foo","bar").await;
+            //session.save().await;
+            log!("************ server_fn_handler *******************");
+            //log!("AuthSession: {auth_session:#?}");
+            log!("Session id in server_fn_handler: {:?}",session.id());
+            log!("************ end server_fn_handler *******************");
             handle_server_fns_with_context(move || {
                 provide_context(auth_session.clone());
                 provide_context(appstate.pool.clone());
+                provide_context(session.clone());
             }, request).await
         }
 
         #[axum_macros::debug_handler]
         async fn leptos_routes_handler(auth_session: AuthSession<SqliteBackend>,
+            session: Session,
             State(appstate): State<AppState>,
             req: http::Request<Body>) -> http::Response<Body>{
                 let AppState{pool,options} = appstate;
+                //session.insert("route_handler",178).await;
+                //session.save().await;
+                log!("************ leptos_routes_handler *******************");
+                log!("Request: {req:#?}");
+                //log!("AuthSession: {auth_session:#?}");
+                //log!("Session: {session:#?}");
+                log!("Session id in leptos_routes_handler: {:?}",session.id());
+                log!("************ end leptos_routes_handler *******************");
                 let handler = leptos_axum::render_app_to_stream_with_context(options.clone(),
                 move || {
                     provide_context(auth_session.clone());
                     provide_context(pool.clone());
+                    provide_context(session.clone());
                 },
                 || view! { <App/> }
             );
@@ -52,9 +71,12 @@ cfg_if!{
 #[cfg(feature = "ssr")]
 #[tokio::main]
 async fn main() {
+    use core::time;
+
     use axum::Router;
     use axum::routing::{get,post};
     use leptos::*;
+    use tower::ServiceBuilder;
     use leptos_axum::{generate_route_list, LeptosRoutes};
     use leptos_axum_auth::{app::*, sqlite_backend::SqliteBackend};
     use leptos_axum_auth::fileserv::file_and_error_handler;
@@ -76,13 +98,16 @@ async fn main() {
     let routes = generate_route_list(App);
 
     let session_store = MemoryStore::default();
-    let session_layer = SessionManagerLayer::new(session_store);
+    let session_layer = SessionManagerLayer::new(session_store)
+        //.with_expiry(tower_sessions::Expiry::OnInactivity(time::Duration::days(5)));
+        ;
     let backend = SqliteBackend::new()
         .await.expect("failed to get auth backend");
     let pool = backend.pool.clone();
     backend.migrate()
         .await.expect("failed database migration");
-    let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer.clone()).build();
+    let auth_layer = ServiceBuilder::new()
+        .layer(AuthManagerLayerBuilder::new(backend, session_layer.clone()).build());
 
     let app_state = AppState {
         options:leptos_options.clone(),
@@ -93,7 +118,7 @@ async fn main() {
         .route("/api/*fn_name", post(server_fn_handler))
         .leptos_routes_with_handler(routes, get(leptos_routes_handler) )
         .fallback(file_and_error_handler)
-        .layer(session_layer)
+        //.layer(session_layer)
         .layer(auth_layer)
         .with_state(app_state);
 
