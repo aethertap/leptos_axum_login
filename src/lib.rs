@@ -1,8 +1,11 @@
+#![allow(unused)]
+
 pub mod app;
 pub mod error_template;
 pub mod auth;
 pub mod user;
 use cfg_if::cfg_if;
+pub mod pages;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {

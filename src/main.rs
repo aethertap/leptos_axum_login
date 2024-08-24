@@ -1,3 +1,4 @@
+#![allow(unused)]
 
 use cfg_if::cfg_if;
 use leptos_axum::handle_server_fns_with_context;
@@ -5,20 +6,37 @@ use leptos_axum::handle_server_fns_with_context;
 cfg_if!{
     if #[cfg(feature="ssr")] {
         use axum_login::AuthSession;
+        use axum_macros::FromRef;
         use axum::{body::Body, extract::State};
+        use sqlx::SqlitePool;
         use leptos_axum_auth::{app::App,sqlite_backend::SqliteBackend};
         use leptos::*;
-        async fn server_fn_handler(auth_session: AuthSession<SqliteBackend>, request: http::Request<Body>){
+
+        /// This holds stuff I need to pass through to my server-side handler functions. YOU
+        /// HAVE TO DERIVE `FromRef` ON THIS!!!! If you get an error message about LeptosOptions
+        /// and Handlers in your Router, it's because you need this derived.
+        #[derive(Clone,FromRef)]
+        pub struct AppState {
+            pub options: LeptosOptions,
+            pub pool: SqlitePool,
+        }
+
+        async fn server_fn_handler(auth_session: AuthSession<SqliteBackend>, State(appstate):State<AppState>,request: http::Request<Body>){
             handle_server_fns_with_context(move || {
                 provide_context(auth_session.clone());
+                provide_context(appstate.pool.clone());
             }, request).await;
         }
 
         #[axum_macros::debug_handler]
-        async fn leptos_routes_handler(auth_session: AuthSession<SqliteBackend>, State(options): State<LeptosOptions>, req: http::Request<Body>) -> http::Response<Body>{
+        async fn leptos_routes_handler(auth_session: AuthSession<SqliteBackend>,
+            State(appstate): State<AppState>,
+            req: http::Request<Body>) -> http::Response<Body>{
+                let AppState{pool,options} = appstate;
                 let handler = leptos_axum::render_app_to_stream_with_context(options.clone(),
                 move || {
-                    provide_context(auth_session.clone())
+                    provide_context(auth_session.clone());
+                    provide_context(pool.clone());
                 },
                 || view! { <App/> }
             );
@@ -58,9 +76,15 @@ async fn main() {
     let session_layer = SessionManagerLayer::new(session_store);
     let backend = SqliteBackend::new()
         .await.expect("failed to get auth backend");
+    let pool = backend.pool.clone();
     backend.migrate()
         .await.expect("failed database migration");
     let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer.clone()).build();
+
+    let app_state = AppState {
+        options:leptos_options.clone(),
+        pool
+    };
 
     let app = Router::new()
         .route("/api/*fn_name", post(server_fn_handler))
@@ -68,7 +92,7 @@ async fn main() {
         .fallback(file_and_error_handler)
         .layer(session_layer)
         .layer(auth_layer)
-        .with_state(leptos_options) ;
+        .with_state(app_state);
 
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     logging::log!("listening on http://{}", &addr);

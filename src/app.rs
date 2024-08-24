@@ -2,6 +2,7 @@ use crate::error_template::{AppError, ErrorTemplate};
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
+use crate::pages::*;
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -30,6 +31,7 @@ pub fn App() -> impl IntoView {
             <main>
                 <Routes>
                     <Route path="" view=HomePage/>
+                    <Route path="register" view=Register/>
                 </Routes>
             </main>
         </Router>
