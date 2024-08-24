@@ -1,11 +1,13 @@
 #![allow(unused)]
 
+use axum::response::IntoResponse;
 use cfg_if::cfg_if;
 use leptos_axum::handle_server_fns_with_context;
 
 cfg_if!{
     if #[cfg(feature="ssr")] {
         use axum_login::AuthSession;
+        use logging::log;
         use axum_macros::FromRef;
         use axum::{body::Body, extract::State};
         use sqlx::SqlitePool;
@@ -21,11 +23,12 @@ cfg_if!{
             pub pool: SqlitePool,
         }
 
-        async fn server_fn_handler(auth_session: AuthSession<SqliteBackend>, State(appstate):State<AppState>,request: http::Request<Body>){
+        async fn server_fn_handler(auth_session: AuthSession<SqliteBackend>, State(appstate):State<AppState>,request: http::Request<Body>) -> impl IntoResponse{
+            log!("server_fn_handler: req={request:#?}");
             handle_server_fns_with_context(move || {
                 provide_context(auth_session.clone());
                 provide_context(appstate.pool.clone());
-            }, request).await;
+            }, request).await
         }
 
         #[axum_macros::debug_handler]

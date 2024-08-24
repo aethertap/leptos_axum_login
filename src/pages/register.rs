@@ -3,21 +3,20 @@ use leptos_dom::logging::console_log;
 
 
 /// This function returns true if the name provided is not already a username in the database.
-#[server(CheckUsername,"api","Url","check_username")]
+#[server(CheckUsername,"/api")]
 pub async fn check_username(name: String) -> Result<bool,ServerFnError> {
-//    use sqlx::{query_as,FromRow,SqlitePool};
-//    use serde::{Deserialize,Serialize};
-//    use logging::log;
-//
-//    #[derive(Clone,Deserialize,Serialize,Debug,FromRow)]
-//    struct Q{username:String}
-//    log!("Checking for username {name}");
-//    let pool:SqlitePool = use_context().expect("No connection pool provided");
-//    let count:Option<Q> = query_as!(Q,"select username from users where username=$1 limit 1", name)
-//        .fetch_optional(&pool).await?;
-//    log!("Fetched {count:#?}");
-//    Ok(count.is_none() && (name != "asdf"))
-    Ok(name != "asdf")
+    use sqlx::{query_as,FromRow,SqlitePool};
+    use serde::{Deserialize,Serialize};
+    use logging::log;
+
+    #[derive(Clone,Deserialize,Serialize,Debug,FromRow)]
+    struct Q{username:String}
+    log!("(Server) Checking for username {name}");
+    let pool:SqlitePool = use_context().expect("No connection pool provided");
+    let count:Option<Q> = query_as!(Q,"select username from users where username=$1 limit 1", name)
+        .fetch_optional(&pool).await?;
+    log!("Fetched {count:#?}");
+    Ok(count.is_none() && (name != "asdf"))
 }
 
 #[component]
@@ -29,7 +28,7 @@ pub fn Register() -> impl IntoView {
     let valid_username = create_resource(
         move || username.get(),
         move |name| async move {
-            console_log("Checking username");
+            console_log(&format!("Checking username {name}"));
             let res = check_username(name).await;
             console_log(&format!("Result: {res:?}"));
             res.unwrap_or(true)
