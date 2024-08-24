@@ -95,7 +95,6 @@ impl AuthnBackend for SqliteBackend {
     type Credentials = (String,String);
     type Error = crate::error_template::AppError;
 
-
     /// `authenticate` looks up the user by name, then checks the given password against the
     /// salted hash in the database to see if it matches. If so, you get the user back. If not,
     /// you get Ok(None). An Err value means something went wrong with the process, not that
@@ -114,13 +113,10 @@ impl AuthnBackend for SqliteBackend {
                 .map_err(|e| AppError::Internal(format!("Failed hash: {e}")))?
                 .to_string();
             if verify_hash == user.pass_hash {
-                Ok(Some(user.to_user()?))
-            } else {
-                Ok(None)
+                return Ok(Some(user.to_user()?))
             }
-        } else {
-            Ok(None)
         }
+        Ok(None)
     }
 
     /// Return Some(user) if the user exists, otherwise return None. Only return an Err value if
@@ -130,12 +126,14 @@ impl AuthnBackend for SqliteBackend {
     /// to the database.
     async fn get_user(&self, user_id: &UserId<Self>)
     -> Result<Option<Self::User>,Self::Error> {
+
         // The stored type in the database isn't the same as what the app uses, so I have a
         // separate query type (SqlUser) that gets converted.
         let mut user:Option<SqlUser> = sqlx::query_as!(SqlUser,
             "select * from users where username = $1", user_id
         ).fetch_optional(&self.pool).await
         .map_err(|e| AppError::Internal(format!("Fetch user: {e}")))?;
+
         // If there is something here, then the user exists and needs to be converted to the
         // version that the app can work with. Otherwise, no such user exists.
         if let Some(user) = user.take() {

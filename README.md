@@ -19,7 +19,7 @@ definitely have a skeptical eye, although it does at least *actually work* with 
 
 ## A note on reading documentation.
 
-I do that. However, there's so much of it (`axum`,  `leptos_axum`, `leptos` (book and docs), `tower`,
+Yes, I do that. However, there's so much of it (`axum`,  `leptos_axum`, `leptos` (book and docs), `tower`,
 `tower-sessions`, `tower-sessions-sqlx-store`,  `axum_login`, `argon2`, `password_hash`, `sqlx`, ...)
 that even after having read all (okay,most) of the docs , things get forgotten. So, there are probably better APIs
 for handling parts of what happens in here, and eventually I'll probably rediscover them enough times
