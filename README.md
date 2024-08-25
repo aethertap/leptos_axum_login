@@ -9,35 +9,53 @@ Hopefully it will be helpful to others at some point as well.
 
 ## A friendly warning
 
-I'm an old-school developer from back in the bad old days before a lot of this technology was even an idea, so
-I am coming at this with a lot of antiquated notions! I'm trying to relearn the modern web and stick to best
-practices, but if you notice something crazy about this repo, you're probably right.
+I learned web dev back in the bad old days before a lot of this technology
+existed, so I am coming at this with a lot of outdated habits. I'm trying to
+relearn the modern web and stick to best practices, but if you notice something
+crazy about this repo, you're probably right and I'd love to know about it.
 
-I would *not* just copy and paste bits and pieces of this code into your own project at this time, although
-I intend to get feedback on it and bring it to a state where that should be just fine. At the moment, you should
-definitely have a skeptical eye, although it does at least *actually work* with the latest versions of things.
+Consequently, I would *not* just copy and paste bits and pieces of this code
+into your own project at this time, although I intend to get feedback on it and
+bring it to a state where that should be just fine. At the moment, you should
+definitely maintain a skeptical eye, although it does at least *actually work*
+with the latest versions of things.
 
 ## A note on reading documentation.
 
-Yes, I do that. However, there's so much of it (`axum`,  `leptos_axum`, `leptos` (book and docs), `tower`,
-`tower-sessions`, `tower-sessions-sqlx-store`,  `axum_login`, `argon2`, `password_hash`, `sqlx`, ...)
-that even after having read all (okay,most) of the docs , things get forgotten. So, there are probably better APIs
-for handling parts of what happens in here, and eventually I'll probably rediscover them enough times
-to notice I should make changes. If you see a better way, I'd love to have help shortcutting that
-process! Let me know how it could have been done better and I'll be grateful.
+I do read the docs for stuff.... However, there's so much of it (`axum`,
+`leptos_axum`, `leptos` (book and docs), `tower`, `tower-sessions`,
+`tower-sessions-sqlx-store`,  `axum_login`, `argon2`, `password_hash`, `sqlx`,
+...) that even after having read all (okay, most) of the docs, things get
+lost in the mix. So, there are probably better APIs for handling parts of what
+happens in here, and eventually I'll probably rediscover them enough times to
+notice I should make changes. If you see a better way, I'd love to have help
+shortcutting that process. Let me know how it could have been done better and
+I'll be grateful.
 
 ## Lessons learned in this process
 
-- `leptos_axum` wraps the `Session` from `tower-sessions` but you can still access it directly with `leptos_axum::extract()`
-- Be careful to keep the `session_auth_hash` and the stored password hash in the database separate in your mind. I
-  had a long debugging session wherein I mixed them together somewhat randomly, and it was horrible.
-    - If you find that your sessions are invalidated every time you switch pages in your app, it is probably because
-    there is something wrong with your `session_auth_hash`. Look there first.
-- You can't have an empty session that gets an id to the browser. If there's no data in the session, it won't send an id, period.
-  This took me significant headscratching to realize, because my "simplest possible case to see if the session layer was inserted correctly" was doing nothing.
-- Calling `auth_session.login(user).await` *does* trigger the session to be sent to the browser, you *don't* have to do a `session.save().await`
-- Don't forget to `.await` on everything involving sessions and auth. This got me for a while as it gave no compiler warnings.
-- `axum` will let you specify a handler that returns nothing. I assumed at the start that this meant all of the
-  request handling was happening through side-effects internally (because I was following code from another internet source),
-  but that is either wrong or outdated. You need to return stuff. If your server functions in leptos are complaining about
-  zero-length payloads and failing to deserialize stuff, this could well be your problem.
+- `leptos_axum` wraps the `Session` from `tower-sessions` but you can still
+  access it directly with `leptos_axum::extract()`
+- Be careful to keep the `session_auth_hash` and the stored password hash in
+    the database separate in your mind. I had a long debugging session wherein
+    I mixed them together somewhat randomly, and it was horrible.
+    - If you find that your sessions are invalidated every time you switch
+        pages in your app, it is probably because there is something wrong with
+        your `session_auth_hash`. Look there first.
+- You can't have an empty session that gets an id to the browser. If there's no
+    data in the session, it won't send an id, period. This took me significant
+    headscratching to realize, because my "simplest possible case to see if the
+    session layer was inserted correctly" was doing nothing.
+- Calling `auth_session.login(user).await` *does* trigger the session to be
+    sent to the browser, you *don't* have to do a `session.save().await`
+- Don't forget to `.await` on everything involving sessions and auth. This got
+    me for a while as it gave no compiler warnings.
+- `axum` will let you specify a handler that returns nothing. I assumed at the
+    start that this meant all of the request handling was happening through
+    side-effects internally (because I was following code from another internet
+    source), but that is either wrong or outdated. You need to return stuff. If
+    your server functions in leptos are complaining about zero-length payloads
+    and failing to deserialize stuff, this could well be your problem.
+
+
+
