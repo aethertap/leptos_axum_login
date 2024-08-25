@@ -34,7 +34,7 @@ I'll be grateful.
 
 ## Lessons learned in this process
 
-- `leptos_axum` wraps the `Session` from `tower-sessions` but you can still
+- `axum_login::AuthSession` wraps the `Session` from `tower-sessions` but you can still
   access it directly with `leptos_axum::extract()`
 - Be careful to keep the `session_auth_hash` and the stored password hash in
     the database separate in your mind. I had a long debugging session wherein
