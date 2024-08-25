@@ -48,29 +48,30 @@ your new user.
 
 ## Lessons learned in this process
 
-- `axum_login::AuthSession` wraps the `Session` from `tower-sessions` but you can still
-  access it directly with `leptos_axum::extract()`
+- `axum_login::AuthSession` wraps the `Session` from `tower-sessions` but you
+  can still access it directly with `leptos_axum::extract()`
 - Be careful to keep the `session_auth_hash` and the stored password hash in
-    the database separate in your mind. I had a long debugging session wherein
-    I mixed them together somewhat randomly, and it was horrible.
+  the database separate in your mind. I had a long debugging session wherein I
+  mixed them together somewhat randomly, and it was horrible.
     - If you find that your sessions are invalidated every time you switch
-        pages in your app, it is probably because there is something wrong with
-        your `session_auth_hash`. Look there first.
+      pages in your app, it is probably because there is something wrong with
+      your `session_auth_hash`. Look there first.
 - You can't have an empty session that gets an id to the browser. If there's no
-    data in the session, it won't send an id, period. This took me significant
-    headscratching to realize, because my "simplest possible case to see if the
-    session layer was inserted correctly" was doing nothing.
+  data in the session, it won't send an id, period. This took me significant
+  headscratching to realize (though it is stated in the documentation!), because
+  my "simplest possible case to see if the session layer was inserted
+  correctly" was doing nothing.
 - Calling `auth_session.login(user).await` *does* trigger the session to be
-    sent to the browser, you *don't* have to do a `session.save().await`
+  sent to the browser, you *don't* have to do a `session.save().await`
 - Don't forget to `.await` on everything involving sessions and auth. This got
-    me for a while as it gave no compiler warnings.
+  me for a while as it gave no compiler warnings.
 - `axum` will let you specify a handler that returns nothing. I assumed at the
-    start that this meant all of the request handling was happening through
-    side-effects internally (because I was following code from another internet
-    source), but that is either wrong or outdated. You need to return stuff. If
-    your server functions in leptos are complaining about zero-length payloads
-    and failing to deserialize stuff in the browser, this could well be your
-    problem.
+  start that this meant all of the request handling was happening through
+  side-effects internally (because I was following code from another internet
+  source), but that is either wrong or outdated. You need to return stuff. If
+  your server functions in leptos are complaining about zero-length payloads
+  and failing to deserialize stuff in the browser, this could well be your
+  problem.
 
 
 ## Todo list
