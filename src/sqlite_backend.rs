@@ -52,35 +52,45 @@ impl SqliteBackend {
     /// Insert a new user into the database. Success only if the user doesn't already exist
     /// and the data meets criteria (which are *very* weak in this example!).
     pub async fn add_user(&self, username: String, password: String) -> Result<Option<User>, AppError> {
-        use base64::prelude::*;
         // First validate the data. You must do better than this.
         if username.len() < 2 || password.len() < 2 {
             return Err(AppError::Invalid("Username and password have to be at least 2 characters each!".into()));
         }
         // Hash the password and insert the new user.
+        // This does the hashing
         let argon2 = Argon2::default();
+        // The salt is used to prevent certain attacks against stored passwords (see the Internet for more)
         let salt = SaltString::generate(&mut OsRng);
+        // I need to actually *store* the salt in the database. Well, at least I want to. The salt is actually
+        // included in the password hash string representation so it's probably not strictly necessary, but old
+        // habits.
         let pass_salt_str = salt.as_str();
-        log!("add_user: hashing password");
+        // This gives back a data structure with various parts, which can be encoded using
+        // a standard format into a string that's suitable for use in plain-text environments. Argon2id is the
+        // recommended hashing algorithm at the time of this code being published (2024)
         let pass_hash:PasswordHash = argon2.hash_password(password.as_bytes(), &salt)
             .map_err(|e| AppError::Internal(format!("Password hashing error: {e}")))?;
-        log!("password hash is {:?}",pass_hash.hash);
+        // Now *this* part is what will be put directly into the database as the user's password hash. This is not just
+        // the 32-byte hash function output, it also has other data attached (like the salt). It has to have
+        // a let-binding outside of the macro or the compiler complains.
         let pass_hash_str = pass_hash.to_string();
+        /// This struct lets the query_as! macro return the new rowid to me.
         #[derive(Debug)]
         struct InsertUser{
+            /// The row_id from sqlite. Other databases will have other ways of returning this to you.
             pub id:i64
         };
-        log!("add_user: inserting user");
         let new_id:InsertUser = sqlx::query_as!(InsertUser, "insert into users (username,pass_hash,pass_salt) values ($1,$2,$3) returning id",
             username,
             pass_hash_str,
             pass_salt_str,
         ).fetch_one(&self.pool).await
         .map_err(|e| AppError::Internal(format!("Error inserting user: {e}")))?;
-        log!("add_user: new user id is {new_id:?}");
-        log!("Returning newly created user {username}");
+
+        // Now we need to make sure we can make a good session key. In this case, we're using the raw bytes
+        // that were output from the password hash (in this case, 32 bytes). This does *not* include the salt
+        // or other associated data that's bulit into the pass_hash_str
         let hash_bytes = pass_hash.hash.unwrap().as_bytes().to_owned();
-        let hash_bytes_64 = BASE64_STANDARD.encode(&hash_bytes);
         Ok(Some(User{
             id:new_id.id,
             username,
@@ -89,6 +99,9 @@ impl SqliteBackend {
     }
 }
 
+/// The `AuthnBackend` is the part that handles autheNtication (proving that a user's identity
+/// is valid). The `AuthzBackend` handles authoriZation (permissions granted to a user whose
+/// identity is already known). I'm only doing authentication for this example. At least for now.
 #[async_trait]
 impl AuthnBackend for SqliteBackend {
     type User = crate::user::User;

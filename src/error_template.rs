@@ -6,13 +6,22 @@ use thiserror::Error;
 pub enum AppError {
     #[error("Not Found")]
     NotFound,
+    /// This is a catch-all for anything that goes wrong inside the server that I can't
+    /// recover from. The user will see the 500 - internal server error, so avoid if possible.
     #[error("Internal Error: {0}")]
     Internal(String),
+
+    /// This is for things entered by the user or from outside the app that aren't
+    /// formatted correctly. Ideally, this should not result in a user-facing HTTP error,
+    /// but should instead be handled by whatever part of the app the user is interacting with
+    /// so that it can help them fix problems. Try to make good error messages!
     #[error("Invalid data: {0}")]
     Invalid(String),
 }
 
 impl AppError {
+    /// This function turns `AppError`s into sever status codes. If you can't find a good one,
+    /// there's always `IM_A_TEAPOT`
     pub fn status_code(&self) -> StatusCode {
         match self {
             AppError::NotFound => StatusCode::NOT_FOUND,

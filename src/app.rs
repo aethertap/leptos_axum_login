@@ -4,14 +4,16 @@ use leptos_meta::*;
 use leptos_router::*;
 use crate::pages::*;
 
+
+/// App is the entry point for all of our stuff. The most important thing that you'll always need to
+/// mess with in here is the routes. Add a route for each page and nested part of a page you want
+/// to render.
 #[component]
 pub fn App() -> impl IntoView {
     // Provides context that manages stylesheets, titles, meta tags, etc.
     provide_meta_context();
 
     view! {
-
-
         // injects a stylesheet into the document <head>
         // id=leptos means cargo-leptos will hot-reload this stylesheet
         <Stylesheet id="leptos" href="/pkg/leptos_axum_auth.css"/>
@@ -30,8 +32,11 @@ pub fn App() -> impl IntoView {
         }>
             <main>
                 <Routes>
+                    // Left this here because it's cool.
                     <Route path="" view=HomePage/>
+                    // renders a beautiful form with a username, password, and submit.
                     <Route path="register" view=Register/>
+                    // Looks just like register, but the action is to log in instead of adding a user.
                     <Route path="login" view=Login/>
                 </Routes>
             </main>
