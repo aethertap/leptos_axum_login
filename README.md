@@ -73,4 +73,10 @@ your new user.
     problem.
 
 
+## Todo list
 
+- [ ] Get this to work with [rauthy](https://gitlab.com/kerkmann/leptos_oidc/-/blob/main/docs/backends/rauthy.md?ref_type=heads) and some other OpenId stuff.
+- [ ] Add a profile view to show how to use the sessions for something like a real use-case
+- [ ] Make the register page redirect to `/` after success
+- [ ] Add a change password page
+- [ ] Add at least minimal styling
