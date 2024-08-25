@@ -55,7 +55,8 @@ I'll be grateful.
     side-effects internally (because I was following code from another internet
     source), but that is either wrong or outdated. You need to return stuff. If
     your server functions in leptos are complaining about zero-length payloads
-    and failing to deserialize stuff, this could well be your problem.
+    and failing to deserialize stuff in the browser, this could well be your
+    problem.
 
 
 
