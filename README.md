@@ -32,6 +32,20 @@ notice I should make changes. If you see a better way, I'd love to have help
 shortcutting that process. Let me know how it could have been done better and
 I'll be grateful.
 
+## Getting set up
+
+You should be able to just run `cargo leptos watch` from the project root and
+it'll go. There is already a sqlite3 database file with some random user data
+in the `db` folder. If you want to log in immediately, go to
+[http://127.0.0.1:3000/login](http://127.0.0.1:3000/login) and enter the
+username 'asdf' with password 'asdf'.
+
+The only other URL that has anything is the `/register`, which lets you define
+a new user. Currently there is **zero feedback** to the user when registration
+is successful, so if you click the button and nothing happens, that's normal.
+Just go to the `/login` page after that and you'll see that you're logged in as
+your new user. 
+
 ## Lessons learned in this process
 
 - `axum_login::AuthSession` wraps the `Session` from `tower-sessions` but you can still
