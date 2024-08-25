@@ -1,11 +1,11 @@
 
 use serde::{Serialize,Deserialize};
-use crate::error_template::AppError;
 
 use cfg_if::cfg_if;
 cfg_if!{
     if #[cfg(feature="ssr")] {
         use axum_login::AuthUser;
+        use crate::error_template::AppError;
         use sqlx::prelude::FromRow;
         use password_hash::PasswordHash;
 
