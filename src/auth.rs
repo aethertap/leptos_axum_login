@@ -1,23 +1,12 @@
 use leptos::*;
-use crate::{error_template::AppError, user::User};
+use crate::user::User;
 use cfg_if::cfg_if;
 
 cfg_if!{
     if #[cfg(feature="ssr")] {
-        use sqlx::SqlitePool;
         use crate::{sqlite_backend::SqliteBackend};
         use axum_login::{AuthSession,AuthnBackend};
-        use leptos_axum;
         use logging::log;
-
-        use argon2::{
-            password_hash::{
-                rand_core::OsRng,
-                PasswordHash, PasswordHasher, PasswordVerifier, SaltString
-            },
-            Argon2
-        };
-
     }
 }
 
@@ -42,7 +31,7 @@ pub async fn login(username: String, password: String) -> Result<Option<User>,Se
     let mut auth :AuthSession<SqliteBackend> = use_context().unwrap();
     // If you want access to the actual session, you'll have to extract it separately because I couldn't
     // find a good way to get it out of the auth session.
-    let mut session:tower_sessions::Session = use_context().unwrap();//leptos_axum::extract().await?;
+    let session:tower_sessions::Session = use_context().unwrap();//leptos_axum::extract().await?;
     // Advanced debugging tools
     log!("Logging in user as '{username}'/'{password}'");
     log!("Session id = {:?}",session.id());
@@ -57,7 +46,7 @@ pub async fn login(username: String, password: String) -> Result<Option<User>,Se
     // place where you actually get a session id sent back to the browser unless you've done other stuff
     // with your sessions elsewhere.
     if let Some(user) = user.as_ref() {
-        auth.login(user).await;
+        auth.login(user).await?;
         Ok(Some(user.clone()))
     } else {
         // If anything else happened other than a successful auth, just return a failure.
@@ -75,21 +64,15 @@ pub async fn register(username: String, password: String) -> Result<Option<User>
     // but this seems nicer.
     let mut auth_session:AuthSession<SqliteBackend> = use_context().expect("auth-session not provided");
     let session:tower_sessions::Session = use_context().unwrap();
-    let pool:SqlitePool = use_context().expect("no database connection");
-    // password hashing. I'm trying to follow the https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
-    // but check your work, this part is too important to trust to an example repo
-    let argon = argon2::Argon2::default();
-    let pass_salt = SaltString::generate(&mut OsRng);
-    let pass_hash = argon.hash_password(password.as_bytes(), &pass_salt)
-        .map_err(|e| AppError::Internal(format!("Password hash failed: {e}")))?.to_string();
-    // check to make sure the user doesn't exist, then insert.
+    // The backend handles all of the password hashing and whatnot. Just call add_user and then go write
+    // the backend, and it's all done!
     let user = auth_session.backend.add_user(username,password).await?;
 
     log!("get_user returned {user:#?}");
     if let Some(user) = user {
         // Tell the AuthSession that we're logged-in now and it should behave accordingly. This will set the
         // session id and send it to the browser as a side-effect (before now you likely had no session id in the browser).
-        auth_session.login(&user).await;
+        auth_session.login(&user).await?;
         log!("AuthSession user after register: {}", auth_session.user.as_ref().unwrap().username);
         log!("Register - session id = {:#?}", session.id());
         Ok(Some(user))

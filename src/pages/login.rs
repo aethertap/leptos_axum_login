@@ -1,9 +1,8 @@
 
 use leptos::*;
 use leptos_router::*;
-use leptos_dom::logging::console_log;
 
-use crate::auth::{Login,GetUser,get_user};
+use crate::auth::{Login,get_user};
 
 
 /// This renders a complex and beautiful reactive HTML user interface, consisting of two

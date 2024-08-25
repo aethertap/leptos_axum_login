@@ -1,4 +1,3 @@
-#![allow(unused)]
 
 // Leptos beginners: Consider this file to be the true root of all of your code, even stuff that is only
 // for the server. When I started using leptos, I got mixed up and tried to split out server

@@ -47,7 +47,6 @@ cfg_if!{
             /// Convert the database row into a user object that the AuthSession
             /// can use.
             pub fn to_user(self) -> Result<User,AppError> {
-                use base64::prelude::*;
                 // parse the hash data out of the string representation that we kept in the database
                 let PasswordHash{hash,..} = PasswordHash::parse(&self.pass_hash,password_hash::Encoding::B64)
                     .map_err(|e| AppError::Internal(format!("Decode password: {e}")))?;

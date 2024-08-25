@@ -1,6 +1,5 @@
 
 use cfg_if::cfg_if;
-use leptos::logging::log;
 
 cfg_if!{
     if #[cfg(feature="ssr")] {
@@ -18,7 +17,7 @@ cfg_if!{
 
     }
 }
-use crate::error_template::{self, AppError};
+use crate::error_template::AppError;
 
 pub static DB_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"),"/db/database.sqlite3");
 pub static MIGRATIONS_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"),"/db/migrations");
@@ -79,7 +78,7 @@ impl SqliteBackend {
         struct InsertUser{
             /// The row_id from sqlite. Other databases will have other ways of returning this to you.
             pub id:i64
-        };
+        }
         let new_id:InsertUser = sqlx::query_as!(InsertUser, "insert into users (username,pass_hash,pass_salt) values ($1,$2,$3) returning id",
             username,
             pass_hash_str,
@@ -119,13 +118,12 @@ impl AuthnBackend for SqliteBackend {
             .fetch_optional(&self.pool).await
             .map_err(|e| AppError::Internal(format!("Fetch user: {e}")))?;
         if let Some(user) = user.take() {
-            let argon2 = Argon2::default();
-            let salt = SaltString::from_b64(&user.pass_salt)
-                .map_err(|e| AppError::Internal(format!("Invalid Salt: {e}")))?;
-            let verify_hash = argon2.hash_password(password.as_bytes(),&salt)
-                .map_err(|e| AppError::Internal(format!("Failed hash: {e}")))?
-                .to_string();
-            if verify_hash == user.pass_hash {
+            let hasher = Argon2::default();
+            let hash = PasswordHash::parse(user.pass_hash.as_ref(),password_hash::Encoding::B64)
+                .map_err(|e| AppError::Internal(format!("Corrupted password hash: {e}")))?;
+            // Use the existing implementation to verify the password. I was doing this myself until
+            // I noticed that there is a PasswordVerifier trait, so this is better in every way.
+            if let Ok(()) = hasher.verify_password(password.as_bytes(), &hash) {
                 return Ok(Some(user.to_user()?))
             }
         }
