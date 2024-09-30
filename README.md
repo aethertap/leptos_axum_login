@@ -9,28 +9,11 @@ Hopefully it will be helpful to others at some point as well.
 
 ## A friendly warning
 
-I learned web dev back in the bad old days before a lot of this technology
-existed, so I am coming at this with a lot of outdated habits. I'm trying to
-relearn the modern web and stick to best practices, but if you notice something
-crazy about this repo, you're probably right and I'd love to know about it.
+I'm still getting used to the modern web, so if you notice something
+crazy about this repo, you're probably right and I'd love to know about it. I'm
+also working on an example like this for 0.7 (it's done, but has too much other
+stuff in it at the moment).
 
-Consequently, I would *not* just copy and paste bits and pieces of this code
-into your own project at this time, although I intend to get feedback on it and
-bring it to a state where that should be just fine. At the moment, you should
-definitely maintain a skeptical eye, although it does at least *actually work*
-with the latest versions of things.
-
-## A note on reading documentation.
-
-I do read the docs for stuff.... However, there's so much of it (`axum`,
-`leptos_axum`, `leptos` (book and docs), `tower`, `tower-sessions`,
-`tower-sessions-sqlx-store`,  `axum_login`, `argon2`, `password_hash`, `sqlx`,
-...) that even after having read all (okay, most) of the docs, things get
-lost in the mix. So, there are probably better APIs for handling parts of what
-happens in here, and eventually I'll probably rediscover them enough times to
-notice I should make changes. If you see a better way, I'd love to have help
-shortcutting that process. Let me know how it could have been done better and
-I'll be grateful.
 
 ## Getting set up
 
