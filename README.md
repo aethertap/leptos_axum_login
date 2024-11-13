@@ -54,7 +54,7 @@ your new user.
   sent to the browser, you *don't* have to do a `session.save().await`
 - Don't forget to `.await` on everything involving sessions and auth. This got
   me for a while as it gave no compiler warnings.
-- `axum` will let you specify a handler that returns nothing. I assumed at the
+- `axum` allows you to specify a handler that returns nothing. I assumed at the
   start that this meant all of the request handling was happening through
   side-effects internally (because I was following code from another internet
   source), but that is either wrong or outdated. You need to return stuff. If
