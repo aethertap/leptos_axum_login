@@ -9,11 +9,10 @@ Hopefully it will be helpful to others at some point as well.
 
 ## A friendly warning
 
-I'm still getting used to the modern web, so if you notice something
-crazy about this repo, you're probably right and I'd love to know about it. I'm
-also working on an example like this for 0.7 (it's done, but has too much other
-stuff in it at the moment).
-
+I'm still getting used to the modern web, so if you notice something crazy
+about this repo, you're probably right and I'd love to know about it. This is
+the version for leptos 0.6, if you look at the main branch of the repo you'll
+see the 0.7 code.
 
 ## Getting set up
 
