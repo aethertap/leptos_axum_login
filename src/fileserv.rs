@@ -6,6 +6,7 @@ use axum::{
     http::{Request, Response, StatusCode},
     response::IntoResponse,
 };
+use config::LeptosOptions;
 use leptos::*;
 use tower::ServiceExt;
 use tower_http::services::ServeDir;
