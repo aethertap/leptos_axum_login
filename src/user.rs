@@ -1,10 +1,15 @@
 
 use serde::{Serialize,Deserialize};
 
+
+pub type DatabaseId = i64;
+
 use cfg_if::cfg_if;
 cfg_if!{
     if #[cfg(feature="ssr")] {
+        use leptos::prelude::*;
         use axum_login::AuthUser;
+        use leptos::logging::log;
         use crate::error_template::AppError;
         use sqlx::prelude::FromRow;
         use password_hash::PasswordHash;
@@ -36,10 +41,9 @@ cfg_if!{
         /// SqliteBackend in order to support `get_user` and `authenticate`
         #[derive(Clone,PartialEq,Debug,FromRow)]
         pub struct SqlUser {
-            pub id: i64,
+            pub id: DatabaseId,
             pub username: String,
             pub pass_hash: String,
-            pub pass_salt: String,
         }
 
         impl SqlUser {
@@ -49,14 +53,15 @@ cfg_if!{
             pub fn to_user(self) -> Result<User,AppError> {
                 // parse the hash data out of the string representation that we kept in the database
                 let PasswordHash{hash,..} = PasswordHash::parse(&self.pass_hash,password_hash::Encoding::B64)
-                    .map_err(|e| AppError::Internal(format!("Decode password: {e}")))?;
+                    .map_err(|e| AppError::InternalError(format!("Decode password: {e}")))?;
                 // This is where we dig into the password hash data structure and pull out just
                 // the actual hash bytes that came out of argon2. These are used to identify the session
                 // so that this user always gets the same session data.
                 let hash:Vec<u8> = hash.map(|output| {
                     output.as_bytes().to_owned()
-                }).ok_or_else(||AppError::Internal("Badly formatted password hash".into()))?;
-
+                }).ok_or_else(||AppError::InternalError("Badly formatted password hash".into()))?;
+                
+                log!("Got user {self:?}");
                 Ok(User {
                     id: self.id,
                     username: self.username,
@@ -76,7 +81,7 @@ cfg_if!{
 #[derive(Clone,PartialEq,Debug,Serialize,Deserialize)]
 pub struct User {
     /// The database id for this user
-    pub id: i64,
+    pub id: DatabaseId,
 
     /// User-facing username, has a unique constraint in the db so we can use it to id users
     pub username: String,
@@ -87,3 +92,4 @@ pub struct User {
     /// but that's how they do it in the example so it's probably fine.
     pub session_auth_hash: Vec<u8>,
 }
+

@@ -1,0 +1,5 @@
+
+database_file = "db/database.sqlite3"
+
+session_table_name = "sessions"
+session_cleanup_interval_seconds = 60

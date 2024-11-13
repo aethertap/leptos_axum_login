@@ -4,6 +4,7 @@ use cfg_if::cfg_if;
 cfg_if!{
     if #[cfg(feature="ssr")] {
         use axum_login::{AuthnBackend, UserId};
+        use sqlx;
         use sqlx::SqlitePool;
         use async_trait::async_trait;
         use crate::user::*;
@@ -29,14 +30,13 @@ pub struct SqliteBackend {
 }
 
 impl SqliteBackend {
-    /// Create a new instance of the backend. The database path is statically given here
-    /// for convenience but should probably come from a config in a real app. If it manages
-    /// to open the db, it returns `Ok(Self)`. Don't forget to call `.migrate()` on the backend
-    /// before you use it to make sure any changes to the db are reflected here.
-    pub async fn new() -> Result<Self,AppError> {
-        let pool = SqlitePool::connect(DB_PATH).await
-            .map_err(|e| AppError::Internal(format!("{e}")))?;
-        Ok(SqliteBackend{pool})
+    /// Create a new instance of the backend. The "connection pool" is provided from the caller. In
+    /// this case, the caller is `main`, so check `main.rs` for details. The 0.6 version of this
+    /// code just uses a static path here, which is why this function even exists.
+    pub fn new(pool: SqlitePool) -> Self {
+        //let pool = SqlitePool::connect(DB_PATH).await
+            //.map_err(|e| AppError::InternalError(format!("{e}")))?;
+        SqliteBackend{pool}
     }
 
     /// Run `sqlx::migrate!` to make sure the database is up to date with the expected
@@ -45,7 +45,7 @@ impl SqliteBackend {
         Ok(sqlx::migrate!("db/migrations")
             .run(&self.pool)
             .await
-            .map_err(|e| AppError::Internal(format!("In migrations: {e}")))?)
+            .map_err(|e| AppError::InternalError(format!("In migrations: {e}")))?)
     }
 
     /// Insert a new user into the database. Success only if the user doesn't already exist
@@ -53,22 +53,18 @@ impl SqliteBackend {
     pub async fn add_user(&self, username: String, password: String) -> Result<Option<User>, AppError> {
         // First validate the data. You must do better than this.
         if username.len() < 2 || password.len() < 2 {
-            return Err(AppError::Invalid("Username and password have to be at least 2 characters each!".into()));
+            return Err(AppError::InvalidData("Username and password have to be at least 2 characters each!".into()));
         }
         // Hash the password and insert the new user.
         // This does the hashing
         let argon2 = Argon2::default();
         // The salt is used to prevent certain attacks against stored passwords (see the Internet for more)
         let salt = SaltString::generate(&mut OsRng);
-        // I need to actually *store* the salt in the database. Well, at least I want to. The salt is actually
-        // included in the password hash string representation so it's probably not strictly necessary, but old
-        // habits.
-        let pass_salt_str = salt.as_str();
         // This gives back a data structure with various parts, which can be encoded using
         // a standard format into a string that's suitable for use in plain-text environments. Argon2id is the
         // recommended hashing algorithm at the time of this code being published (2024)
         let pass_hash:PasswordHash = argon2.hash_password(password.as_bytes(), &salt)
-            .map_err(|e| AppError::Internal(format!("Password hashing error: {e}")))?;
+            .map_err(|e| AppError::InternalError(format!("Password hashing error: {e}")))?;
         // Now *this* part is what will be put directly into the database as the user's password hash. This is not just
         // the 32-byte hash function output, it also has other data attached (like the salt). It has to have
         // a let-binding outside of the macro or the compiler complains.
@@ -79,12 +75,11 @@ impl SqliteBackend {
             /// The row_id from sqlite. Other databases will have other ways of returning this to you.
             pub id:i64
         }
-        let new_id:InsertUser = sqlx::query_as!(InsertUser, "insert into users (username,pass_hash,pass_salt) values ($1,$2,$3) returning id",
+        let new_id:InsertUser = sqlx::query_as!(InsertUser, "insert into users (username,pass_hash) values ($1,$2) returning id",
             username,
             pass_hash_str,
-            pass_salt_str,
         ).fetch_one(&self.pool).await
-        .map_err(|e| AppError::Internal(format!("Error inserting user: {e}")))?;
+        .map_err(|e| AppError::InternalError(format!("Error inserting user: {e}")))?;
 
         // Now we need to make sure we can make a good session key. In this case, we're using the raw bytes
         // that were output from the password hash (in this case, 32 bytes). This does *not* include the salt
@@ -116,11 +111,11 @@ impl AuthnBackend for SqliteBackend {
         let mut user:Option<SqlUser> =  sqlx::query_as!(SqlUser,
                 "select * from users where username = $1", username)
             .fetch_optional(&self.pool).await
-            .map_err(|e| AppError::Internal(format!("Fetch user: {e}")))?;
+            .map_err(|e| AppError::InternalError(format!("Fetch user: {e}")))?;
         if let Some(user) = user.take() {
             let hasher = Argon2::default();
             let hash = PasswordHash::parse(user.pass_hash.as_ref(),password_hash::Encoding::B64)
-                .map_err(|e| AppError::Internal(format!("Corrupted password hash: {e}")))?;
+                .map_err(|e| AppError::InternalError(format!("Corrupted password hash: {e}")))?;
             // Use the existing implementation to verify the password. I was doing this myself until
             // I noticed that there is a PasswordVerifier trait, so this is better in every way.
             if let Ok(()) = hasher.verify_password(password.as_bytes(), &hash) {
@@ -143,7 +138,7 @@ impl AuthnBackend for SqliteBackend {
         let mut user:Option<SqlUser> = sqlx::query_as!(SqlUser,
             "select * from users where username = $1", user_id
         ).fetch_optional(&self.pool).await
-        .map_err(|e| AppError::Internal(format!("Fetch user: {e}")))?;
+        .map_err(|e| AppError::InternalError(format!("Fetch user: {e}")))?;
 
         // If there is something here, then the user exists and needs to be converted to the
         // version that the app can work with. Otherwise, no such user exists.

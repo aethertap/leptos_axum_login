@@ -1,32 +1,29 @@
 use http::status::StatusCode;
-use leptos::*;
+use leptos::prelude::*;
 use thiserror::Error;
 
 #[derive(Clone, Debug, Error)]
 pub enum AppError {
     #[error("Not Found")]
     NotFound,
-    /// This is a catch-all for anything that goes wrong inside the server that I can't
-    /// recover from. The user will see the 500 - internal server error, so avoid if possible.
+    #[error("Invalid Session ID: {0}")]
+    InvalidSessionId(String),
     #[error("Internal Error: {0}")]
-    Internal(String),
-
-    /// This is for things entered by the user or from outside the app that aren't
-    /// formatted correctly. Ideally, this should not result in a user-facing HTTP error,
-    /// but should instead be handled by whatever part of the app the user is interacting with
-    /// so that it can help them fix problems. Try to make good error messages!
-    #[error("Invalid data: {0}")]
-    Invalid(String),
+    InternalError(String),
+    #[error("Database error: {0}")]
+    DatabaseError(String),
+    #[error("Invalid data provided: {0}")]
+    InvalidData(String),
 }
 
 impl AppError {
-    /// This function turns `AppError`s into sever status codes. If you can't find a good one,
-    /// there's always `IM_A_TEAPOT`
     pub fn status_code(&self) -> StatusCode {
         match self {
             AppError::NotFound => StatusCode::NOT_FOUND,
-            AppError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            AppError::Invalid(_) => StatusCode::NOT_ACCEPTABLE,
+            AppError::InvalidSessionId(_) => StatusCode::UNAUTHORIZED,
+            AppError::InternalError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::InvalidData(_) => StatusCode::NOT_ACCEPTABLE,
         }
     }
 }
@@ -39,7 +36,7 @@ pub fn ErrorTemplate(
     #[prop(optional)] errors: Option<RwSignal<Errors>>,
 ) -> impl IntoView {
     let errors = match outside_errors {
-        Some(e) => create_rw_signal(e),
+        Some(e) => RwSignal::new(e),
         None => match errors {
             Some(e) => e,
             None => panic!("No Errors found and we expected errors!"),
@@ -67,16 +64,16 @@ pub fn ErrorTemplate(
     }
 
     view! {
-        <h1>{if errors.len() > 1 {"Errors"} else {"Error"}}</h1>
+        <h1>{if errors.len() > 1 { "Errors" } else { "Error" }}</h1>
         <For
             // a function that returns the items we're iterating over; a signal is fine
-            each= move || {errors.clone().into_iter().enumerate()}
+            each=move || { errors.clone().into_iter().enumerate() }
             // a unique key for each item as a reference
             key=|(index, _error)| *index
             // renders each item to a view
             children=move |error| {
                 let error_string = error.1.to_string();
-                let error_code= error.1.status_code();
+                let error_code = error.1.status_code();
                 view! {
                     <h2>{error_code.to_string()}</h2>
                     <p>"Error: " {error_string}</p>

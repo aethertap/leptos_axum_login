@@ -1,19 +1,21 @@
 
 # Leptos, Axum, Sqlx, tower-sessions, axum_login
 
-This repository ~~will eventually be~~ is a working example of session
-management and authentication/authorization using the tools in the title. There
-are a few other examples that hit some of those parts, but I want to put it all
-together into a simple template, mostly so I could actually learn how it works.
+This repository is a working example of session management and
+authentication/authorization using the tools in the title. There are a few
+other examples that hit some of those parts, but I want to put it all together
+into a simple template, mostly so I could actually learn how it works.
 Hopefully it will be helpful to others at some point as well.
 
 ## A friendly warning
 
-I'm still getting used to the modern web, so if you notice something
-crazy about this repo, you're probably right and I'd love to know about it. I'm
-also working on an example like this for 0.7 (it's done, but has too much other
-stuff in it at the moment).
-
+I'm still getting used to the modern web, so if you notice something crazy
+about this repo, you're probably right and I'd love to know about it. This
+branch holds the updated 0.7 code, which is working as of 2024-11-12. It
+probably has bugs, and it's possible that I haven't updated all of the comments
+correctly. Please open an issue if something sounds wrong or needs extra
+explanation, I'm aiming for this to be a super-clear intro to getting leptos
+working with logins and sessions.
 
 ## Getting set up
 
@@ -22,6 +24,10 @@ it'll go. There is already a sqlite3 database file with some random user data
 in the `db` folder. If you want to log in immediately, go to
 [http://127.0.0.1:3000/login](http://127.0.0.1:3000/login) and enter the
 username 'asdf' with password 'asdf'.
+
+The "home" page will redirect you to the login page if you aren't logged in,
+mostly to demo how that process works (at least how it works if you do it the
+way I did. There might be better ways).
 
 The only other URL that has anything is the `/register`, which lets you define
 a new user. Currently there is **zero feedback** to the user when registration
@@ -61,6 +67,9 @@ your new user.
 
 - [ ] Get this to work with [rauthy](https://gitlab.com/kerkmann/leptos_oidc/-/blob/main/docs/backends/rauthy.md?ref_type=heads) and some other OpenId stuff.
 - [ ] Add a profile view to show how to use the sessions for something like a real use-case
-- [ ] Make the register page redirect to `/` after success
+- [x] Make the register page redirect to `/` after success
 - [ ] Add a change password page
-- [ ] Add at least minimal styling
+- [x] Add at least minimal styling
+- [x] port the code to the latest leptos (0.7rc3 as of last time I updated the README)
+
+

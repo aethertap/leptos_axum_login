@@ -1,0 +1,12 @@
+{
+  "name":"Leptos Axum Login Example",
+  "display": "standalone",
+  "start_url": "/",
+  "icons": [
+    {
+      "src":"/app-icon-2.png",
+      "type": "image/png",
+      "sizes": "757x757"
+    }
+  ]
+}
