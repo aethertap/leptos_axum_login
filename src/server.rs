@@ -41,7 +41,7 @@ pub async fn require_login(mut next:Option<String>) -> Result<Option<User>,Serve
         return Ok(Some(user))
     } else {
         use leptos_router::hooks::use_navigate;
-        log!("require_login: no logged-in user, redirecting to {return_to}");
+        log!("require_login: no logged-in user, redirecting to /login?c={return_to}");
         // I want to be able to redirect, this is the way. 
         let nav = use_navigate();
         // 'c' in this stands for "next". Or maybe "continue", something like that... This call

@@ -36,7 +36,7 @@ fn HomePage() -> impl IntoView {
     // Here's a demo of how require_login works. It will send the user to the login page if they
     // aren't already authorized, then when they get signed in they get sent back here. If they
     // aren't registered, the redirect doesn't currently survive the shuffle, sorry.
-    let user = Resource::new(||(), move|_| crate::server::require_login(None));
+    let user = Resource::new_blocking(||(), move|_| crate::server::require_login(None));
     // This view would be rendered if the redirect didn't happen in a timely manner for some
     // reason. It might be rendered if it's done server-side, but I'm honestly not sure.
     let no_user = move || view! {
