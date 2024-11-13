@@ -71,5 +71,6 @@ your new user.
 - [ ] Add a change password page
 - [x] Add at least minimal styling
 - [x] port the code to the latest leptos (0.7rc3 as of last time I updated the README)
+- [ ] Make a version of this that works as a progressive web app that can be installed to run offline
 
 
