@@ -21,10 +21,8 @@ pub async fn file_or_index_handler(
 ) -> AxumResponse {
     let root = state.leptos_options.site_root.clone();
     let res = get_static_file(uri.clone(), &root).await.unwrap();
-    //log!("file_or_index_handler");
     if res.status() == StatusCode::OK {
         let r = res.into_response();
-        //log!("result: {r:#?}");
         r
     } else {
         provide_meta_context();
@@ -54,6 +52,7 @@ async fn get_static_file(
     uri: Uri,
     root: &str,
 ) -> Result<Response<Body>, (StatusCode, String)> {
+    use leptos::logging::log;
     if uri.path().ends_with(".webmanifest") { // special case, send the web app manifest
         let resp = Response::builder()
             .status(200)
@@ -61,6 +60,7 @@ async fn get_static_file(
             .body(Body::from(MANIFEST));
         return Ok(resp.unwrap());
     }
+    log!("Requesting static file: {uri}");
     let req = Request::builder()
         .uri(uri.clone())
         .body(Body::empty())
@@ -68,7 +68,10 @@ async fn get_static_file(
     // `ServeDir` implements `tower::Service` so we can call it with `tower::ServiceExt::oneshot`
     // This path is relative to the cargo root
     match ServeDir::new(root).oneshot(req).await {
-        Ok(res) => Ok(res.into_response()),
+        Ok(res) => {
+            log!("response status: {}",res.status());
+            Ok(res.into_response())
+        },
     }
 }
 

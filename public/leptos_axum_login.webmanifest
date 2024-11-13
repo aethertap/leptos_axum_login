@@ -4,9 +4,9 @@
   "start_url": "/",
   "icons": [
     {
-      "src":"/app-icon-2.png",
+      "src":"/leptos_circle.png",
       "type": "image/png",
-      "sizes": "757x757"
+      "sizes": "755x755"
     }
   ]
 }
