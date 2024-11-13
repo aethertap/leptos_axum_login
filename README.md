@@ -7,16 +7,6 @@ other examples that hit some of those parts, but I want to put it all together
 into a simple template, mostly so I could actually learn how it works.
 Hopefully it will be helpful to others at some point as well.
 
-## A friendly warning
-
-I'm still getting used to the modern web, so if you notice something crazy
-about this repo, you're probably right and I'd love to know about it. This
-branch holds the updated 0.7 code, which is working as of 2024-11-12. It
-probably has bugs, and it's possible that I haven't updated all of the comments
-correctly. Please open an issue if something sounds wrong or needs extra
-explanation, I'm aiming for this to be a super-clear intro to getting leptos
-working with logins and sessions.
-
 ## Getting set up
 
 You should be able to just run `cargo leptos watch` from the project root and
