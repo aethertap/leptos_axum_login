@@ -27,6 +27,11 @@ your new user.
 
 ## Lessons learned in this process
 
+- If you get `wasm-bindgen` version number problems, the solution has two
+  steps. First, install the latest versions of `cargo-leptos` and
+  `wasm-bindgen-cli`. Then, update the `wasm-bindgen` version in your
+  `Cargo.toml` to the latest version (which will be helpfully provided by the
+  error message).
 - `axum_login::AuthSession` wraps the `Session` from `tower-sessions` but you
   can still access it directly with `leptos_axum::extract()`
 - Be careful to keep the `session_auth_hash` and the stored password hash in
@@ -63,4 +68,7 @@ your new user.
 - [x] port the code to the latest leptos (0.7rc3 as of last time I updated the README)
 - [ ] Make a version of this that works as a progressive web app that can be installed to run offline
 
+## Update log
+
+- 2024-12-17: Updated to leptos 0.7.1, wasm-bindgen 0.2.99
 
