@@ -70,5 +70,7 @@ your new user.
 
 ## Update log
 
+
 - 2024-12-17: Updated to leptos 0.7.1, wasm-bindgen 0.2.99
+- 2025-01-24: cargo update; build check
 
