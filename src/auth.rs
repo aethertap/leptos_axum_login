@@ -14,7 +14,7 @@ cfg_if!{
 /// it will return `Some(user)`, otherwise it returns `None`. This is useful for checking
 /// login status in components before rendering stuff that either assumes a user, or shouldn't
 /// be accessible to the unauthorized.
-#[server(GetUser,"/api","Url","get_user")]
+#[server(name=GetUser,prefix="/api",endpoint="get_user")]
 pub async fn get_user() -> Result<Option<User>,ServerFnError> {
     let session: AuthSession<SqliteBackend> = use_context().expect("session not provided");
     log!("Session user: {:#?}", session.user);
@@ -23,7 +23,7 @@ pub async fn get_user() -> Result<Option<User>,ServerFnError> {
 
 /// Check the credentials and log the user in. This is the central purpose of this example! See the pages/login.rs
 /// file for an example of how this one is used.
-#[server(Login,"/api","Url","login")]
+#[server(name=Login,prefix="/api",endpoint="login")]
 pub async fn login(username: String, password: String) -> Result<Option<User>,ServerFnError> {
     // Note that you can still use `leptos_axum::extract().await?` if you want, but since we
     // called `provide_context` from the `server_fn_handler` in `main`, we can do it this way
@@ -58,7 +58,7 @@ pub async fn login(username: String, password: String) -> Result<Option<User>,Se
 /// Add a user to the database and log them in, because I get annoyed by sites that let me register and then
 /// make me log in separately after that. Give me a break! This function is called from the Register component
 /// which is in pages/register.rs.
-#[server(Register,"/api","Url","register")]
+#[server(name=Register,prefix="/api",endpoint="register")]
 pub async fn register(username: String, password: String) -> Result<Option<User>,ServerFnError> {
     // Extract the auth_session and session. You could also use `leptos_axum::extract().await` here,
     // but this seems nicer.

@@ -1,5 +1,6 @@
 use leptos::prelude::*;
 use leptos::logging::log;
+use leptos_router::location::Url;
 use crate::user::User;
 use cfg_if::cfg_if;
 
@@ -55,7 +56,7 @@ pub async fn require_login(mut next:Option<String>) -> Result<Option<User>,Serve
 /// it will return `Some(user)`, otherwise it returns `None`. This is useful for checking
 /// login status in components before rendering stuff that either assumes a user, or shouldn't
 /// be accessible to the unauthorized.
-#[server(GetUser,"/api","Url","get_user")]
+#[server(name=GetUser,prefix="/api",endpoint="get_user")]
 pub async fn get_user() -> Result<Option<User>,ServerFnError> {
     let session: AuthSession<SqliteBackend> = use_context().expect("session not provided");
     //log!("Session user: {:#?}", session.user.as_ref().map(|u| u.username));
@@ -64,7 +65,7 @@ pub async fn get_user() -> Result<Option<User>,ServerFnError> {
 
 /// Check the credentials and log the user in. This is the central purpose of this example! See the pages/login.rs
 /// file for an example of how this one is used.
-#[server(LoginUser,"/api","Url","login")]
+#[server(name=LoginUser,prefix="/api",endpoint="login")]
 pub async fn login_user(username: String, password: String) -> Result<Option<User>,ServerFnError> {
     // Note that you can still use `leptos_axum::extract().await?` if you want, but since we
     // called `provide_context` from the `server_fn_handler` in `main`, we can do it this way
@@ -99,7 +100,7 @@ pub async fn login_user(username: String, password: String) -> Result<Option<Use
 /// Add a user to the database and log them in, because I get annoyed by sites that let me register and then
 /// make me log in separately after that. Give me a break! This function is called from the Register component
 /// which is in pages/register.rs.
-#[server(RegisterNewUser,"/api","Url","register")]
+#[server(name=RegisterNewUser,prefix="/api",endpoint="register")]
 pub async fn register_new_user(username: String, password: String) -> Result<Option<User>,ServerFnError> {
     // Extract the auth_session and session. You could also use `leptos_axum::extract().await` here,
     // but this seems nicer.

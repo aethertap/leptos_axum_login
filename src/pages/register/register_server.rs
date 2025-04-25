@@ -12,7 +12,7 @@ cfg_if::cfg_if! {
     
 // Select a user with the given username from the db. If they exist, return true. Otherwise,
 // return false. In otherwords, return true if the username is in the databse. 
-#[server(UserExists, "/api","Url","user_exists")]
+#[server(name=UserExists, prefix="/api",endpoint="user_exists")]
 pub async fn user_exists(user:String) -> Result<bool, ServerFnError> {
     use sqlx::{query_as,FromRow};
 
