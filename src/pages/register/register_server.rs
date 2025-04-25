@@ -12,6 +12,8 @@ cfg_if::cfg_if! {
     
 // Select a user with the given username from the db. If they exist, return true. Otherwise,
 // return false. In otherwords, return true if the username is in the databse. 
+// * note: as of leptos 0.8, we can call out the actual names for these macro parameters so I've done
+//   that throughout the example. 
 #[server(name=UserExists, prefix="/api",endpoint="user_exists")]
 pub async fn user_exists(user:String) -> Result<bool, ServerFnError> {
     use sqlx::{query_as,FromRow};

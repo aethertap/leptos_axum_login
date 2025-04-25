@@ -22,13 +22,15 @@ pub fn App() -> impl IntoView {
     }
 }
 
+/// This is just a function that asks the server to "do something." This is something, so this is
+/// what it will do.
 #[server(Ping)]
 pub async fn ping() -> Result<String,ServerFnError> {
     tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
     Ok("Pong".into())
 }
 
-/// Renders the home page of your application.
+/// Renders the home page of your application. 
 #[component]
 fn HomePage() -> impl IntoView {
     use leptos::either::Either;
