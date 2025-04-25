@@ -14,9 +14,9 @@ pub fn App() -> impl IntoView {
         <Router>
             <Title formatter=move |text| format!("{text} - Login stuff")/>
             <Routes fallback=|| "Page not found.".into_view()>
-            <Route path=path!("/") view=HomePage/>
-            <Route path=path!("/register") view=Register/>
-            <Route path=path!("/login") view=Login/>
+                <Route path=path!("/") view=HomePage/>
+                <Route path=path!("/register") view=Register/>
+                <Route path=path!("/login") view=Login/>
             </Routes>
         </Router>
     }
