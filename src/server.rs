@@ -1,6 +1,5 @@
 use leptos::prelude::*;
 use leptos::logging::log;
-use leptos_router::location::Url;
 use crate::user::User;
 use cfg_if::cfg_if;
 

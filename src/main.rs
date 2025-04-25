@@ -201,7 +201,7 @@ async fn main() {
     // axum, and we're telling it to send all api calls to the server_func_handler we defined
     // before. That one will then give the request to leptos via `handle_server_fns_with_context`.
     let app = Router::new()
-        .route("/api/*fn_name", post(server_func_handler))
+        .route("/api/{*fn_name}", post(server_func_handler))
         .fallback(file_or_index_handler)
         .layer(auth_session_layer)
         .with_state(app_state);
