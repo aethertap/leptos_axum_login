@@ -7,7 +7,7 @@ pub type DatabaseId = i64;
 use cfg_if::cfg_if;
 cfg_if!{
     if #[cfg(feature="ssr")] {
-        use leptos::prelude::*;
+        //use leptos::prelude::*;
         use axum_login::AuthUser;
         use leptos::logging::log;
         use crate::error_template::AppError;

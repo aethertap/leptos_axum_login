@@ -66,7 +66,7 @@ pub async fn register(username: String, password: String) -> Result<Option<User>
     let session:tower_sessions::Session = use_context().unwrap();
     // The backend handles all of the password hashing and whatnot. Just call add_user and then go write
     // the backend, and it's all done!
-    let user = auth_session.backend.add_user(username,password).await?;
+    let user:Option<User> = auth_session.backend.add_user(username,password).await?;
 
     log!("get_user returned {user:#?}");
     if let Some(user) = user {
@@ -81,3 +81,4 @@ pub async fn register(username: String, password: String) -> Result<Option<User>
         Ok(None)
     }
 }
+

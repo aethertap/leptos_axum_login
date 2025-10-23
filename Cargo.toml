@@ -24,12 +24,12 @@ inherits = "dev"
 axum = { version = "0.8", features=["macros"], optional = true }
 console_error_panic_hook = "0.1"
 
-leptos = { git = "https://github.com/leptos-rs/leptos",  features = ["nightly"] , tag="v0.8.0-rc2"}
-leptos_axum = { git = "https://github.com/leptos-rs/leptos",  optional = true, tag="v0.8.0-rc2" }
-leptos_meta = { git = "https://github.com/leptos-rs/leptos", tag="v0.8.0-rc2" }
-leptos_router = { git = "https://github.com/leptos-rs/leptos", features = ["nightly"], tag="v0.8.0-rc2" }
-leptos_router_macro = { git = "https://github.com/leptos-rs/leptos", tag="v0.8.0-rc2"}
-reactive_graph = { git = "https://github.com/leptos-rs/leptos", tag="v0.8.0-rc2"}
+leptos = { git = "https://github.com/leptos-rs/leptos",  features = ["nightly"] , tag="v0.8.10"}
+leptos_axum = { git = "https://github.com/leptos-rs/leptos",  optional = true, tag="v0.8.10" }
+leptos_meta = { git = "https://github.com/leptos-rs/leptos", tag="v0.8.10" }
+leptos_router = { git = "https://github.com/leptos-rs/leptos", features = ["nightly"], tag="v0.8.10" }
+leptos_router_macro = { git = "https://github.com/leptos-rs/leptos", tag="v0.8.10"}
+reactive_graph = { git = "https://github.com/leptos-rs/leptos", tag="v0.8.10"}
 
 tower = { version = "*", optional = true }
 tower-http = { version = "*", features = ["fs"], optional = true }
@@ -37,14 +37,15 @@ tokio = { version = "1", features = ["full"], optional = true }
 http = "1"
 
 thiserror = "2"
-wasm-bindgen = "=0.2.100"
+wasm-bindgen = "=0.2.104"
 tracing = { version = "*", optional = true }
 cfg-if = "*"
 axum-login = { version = "*", optional = true }
 tower-sessions = { version = "*", optional = true }
 password-hash = { version = "*", optional = true }
 sqlx = { version = "*", features = ["sqlite", "runtime-tokio"], optional=true }
-async-trait = {version="*",optional=true}
+# Removed async-trait 2025-10-23 for... reasons... that I'm not sure I understand at the moment.
+#async-trait = {version="*",optional=true}
 argon2 = {version="*",optional=true}
 serde = { version = "*", features = ["derive"] }
 structopt = {version="*", optional=true}
@@ -65,7 +66,7 @@ ssr = [
     "dep:tower-sessions",
     "dep:password-hash",
     "dep:sqlx",
-    "dep:async-trait",
+    #"dep:async-trait",
     "dep:argon2",
     "dep:structopt",
     "dep:toml",

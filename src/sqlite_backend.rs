@@ -6,7 +6,8 @@ cfg_if!{
         use axum_login::{AuthnBackend, UserId};
         use sqlx;
         use sqlx::SqlitePool;
-        use async_trait::async_trait;
+        //use async_trait::async_trait; // removed, but not sure exactly why... See the trait impl
+        //for AuthnBackend below.
         use crate::user::*;
         use argon2::{
             password_hash::{
@@ -93,11 +94,16 @@ impl SqliteBackend {
     }
 }
 
-/// The `AuthnBackend` is the part that handles autheNtication (proving that a user's identity
-/// is valid). The `AuthzBackend` handles authoriZation (permissions granted to a user whose
-/// identity is already known). I'm only doing authentication for this example. At least for now.
-#[async_trait]
+/// The `AuthnBackend` is the part that handles autheNtication (proving that a user's identity is
+/// valid). The `AuthzBackend` handles authoriZation (permissions granted to a user whose identity
+/// is already known). I'm only doing authentication for this example. At least for now.
 impl AuthnBackend for SqliteBackend {
+    // TODO:
+    // 2025-10-23: Removed #[async_trait] from this impl, maybe it's no longer required? not sure here.
+    // async_trait still exists and says it's required if you want to use this trait as a dyn object,
+    // but if I put async_trait back it complains about lifetimes mismatching with no further
+    // guidance. This needs some investigation, but it compiles for now.
+
     type User = crate::user::User;
     type Credentials = (String,String);
     type Error = crate::error_template::AppError;
